@@ -16,7 +16,6 @@ public interface UserImpl {
     public ResponseEntity<ResponseObject> forgot(String email);
     public ResponseEntity<ResponseObject> reset(int userId);
     public ResponseEntity<ResponseObject> changePassword(ChangePasswordModel model);
-    public ResponseEntity<ResponseObject> getByAuthorization(int userId, HttpServletRequest request);
-
-
+    public ResponseEntity<ResponseObject> getByAuthorization(HttpServletRequest request);
+    public ResponseEntity<ResponseObject> getRoleIdByAuthorization(HttpServletRequest request);
 }

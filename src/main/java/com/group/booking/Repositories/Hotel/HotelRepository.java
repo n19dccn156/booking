@@ -14,6 +14,7 @@ import com.group.booking.Models.Hotel.HotelModel;
 public interface HotelRepository extends JpaRepository<HotelModel, Integer> {
     
     Optional<HotelModel> findByIdAndIsActive(int id, boolean isActive);
+    Optional<HotelModel> findByUserIdAndIsActive(int userId, boolean isActive);
     
     @Query(value = "SELECT "+
                     "id, "+

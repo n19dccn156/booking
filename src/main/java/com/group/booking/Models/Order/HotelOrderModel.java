@@ -15,7 +15,6 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.group.booking.Common.Const;
 import com.group.booking.Common.Message;
 import com.group.booking.Models.Addons.OrderRequest;
 import com.group.booking.Utils.TimeUltil;
@@ -86,15 +85,15 @@ public class HotelOrderModel {
     @ToString.Exclude
     private Set<HotelOrderDetailModel> orderDetails;
     
-    public HotelOrderModel(OrderRequest order) {
-        this.checkin = order.getCheckin();
-        this.checkout = order.getCheckout();
-        this.createdAt = TimeUltil.getCurrentTimeStamp();
-        this.modifyTime = TimeUltil.getCurrentTimeStamp();
+    public HotelOrderModel(OrderRequest order, String status) {
+        this.statusId = status;
         this.name = order.getName();
         this.phone = order.getPhone();
         this.userId = order.getUserId();
         this.hotelId = order.getHotelId();
-        this.statusId = Const.AWAIT;
+        this.checkin = order.getCheckin();
+        this.checkout = order.getCheckout();
+        this.createdAt = TimeUltil.getCurrentTimeStamp();
+        this.modifyTime = TimeUltil.getCurrentTimeStamp();
     }
 }

@@ -36,8 +36,6 @@ public class RoomTypeController implements RoomTypeImpl {
         @PathVariable("hotelId") int hotelId, 
         @RequestParam(name = "checkin", required = true) String checkin, 
         @RequestParam(name = "checkout", required = true) String checkout) {
-        
-        System.out.println(checkout.toString());
 
         List<RoomTypeModel> foundRoomType = roomTypeService.findByHotelId(hotelId, checkin, checkout);
         return foundRoomType != null ?

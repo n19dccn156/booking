@@ -13,15 +13,20 @@ import javax.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.group.booking.Common.Const;
 import com.group.booking.Models.Addons.Comment;
 import com.group.booking.Models.Addons.HotelResponse;
+import com.group.booking.Models.Addons.PrecentByRoomType;
 import com.group.booking.Models.Addons.ResultResponse;
+import com.group.booking.Models.Addons.RevenueOn12MonthAgo;
 import com.group.booking.Models.Hotel.HotelModel;
 import com.group.booking.Models.Hotel.HotelResponseModel;
 import com.group.booking.Models.Hotel.ImageHotelModel;
 import com.group.booking.Repositories.Hotel.HotelRepository;
 import com.group.booking.Repositories.Hotel.ImageHotelRepository;
+import com.group.booking.Utils.JwtUltil;
 import com.group.booking.Utils.ListFilter;
+import com.group.booking.Utils.TimeUltil;
 
 @Service
 public class HotelService {
@@ -32,6 +37,8 @@ public class HotelService {
     private EntityManager db;
     @Autowired
     private ImageHotelRepository imageHotelRepository;
+    @Autowired
+    private JwtUltil jwtUtil;
 
     public HotelModel foundById(int id) {
         try {
@@ -182,15 +189,71 @@ public class HotelService {
                 "ON u.id = ho.users_id ORDER BY ho.modify_time LIMIT " + size + " OFFSET " + (page-1);
             String queryCount = "SELECT COUNT(id) FROM hotel_orders WHERE hotels_id = " + hotelId + " and rating != null";
             int totalElements = Integer.valueOf(db.createNativeQuery(queryCount).getResultList().get(0).toString());
-            System.out.println(totalElements);
             return totalElements != 0 ?
                 new ResultResponse(db.createNativeQuery(query, Comment.class).getResultList(), totalElements, (int) Math.ceil(1.0*totalElements/size), page, size)
                 :
                 new ResultResponse("", totalElements, (int) Math.ceil(1.0*totalElements/size), page, size);
         } catch (Exception e) {
-            e.printStackTrace();
         }
         return null;
     }
 
+    public List<RevenueOn12MonthAgo> getRevenueOn12MonthAgo(String authorization) {
+        try {
+            String userId = jwtUtil.validateAndGetSubject(authorization);
+            if(!userId.equals("")) {
+                HotelModel foundHotel = foundByUserId(Integer.valueOf(userId));
+                if(foundHotel != null) {
+                    String query =  
+                        "SELECT "+
+                            "ROW_NUMBER() OVER(ORDER BY ho.month ASC) ind, "+
+                            "ho.month, SUM(hod.price * hod.quantity) total "+
+                        "FROM hotel_order_details hod "+
+                        "INNER JOIN ( " +
+                            "SELECT id, CONCAT(month(checkin),'-',year(checkin)) month "+
+                            "FROM booking.hotel_orders " +
+                            "WHERE hotels_id = "+ foundHotel.getId() + " AND status_id = '" + Const.COMPLETE + "'"+ 
+                                " AND checkin >= '"+ TimeUltil.getCurrentMonthAgoYear() +"' AND checkin <= '" + TimeUltil.getCurrentMonth() + "'"+
+                        ") ho "+
+                        "ON hod.hotel_orders_id = ho.id "+
+                        "GROUP BY ho.month";
+                    System.out.println(query);
+                    // "-- hotels_id = 1 and status_id = 'DAHOANTHANH'"
+                    return db.createNativeQuery(query, RevenueOn12MonthAgo.class).getResultList();
+                }
+            }
+        } catch (Exception e) {}
+        return null;
+    }
+
+    public List<PrecentByRoomType> getPrecentByRoomType() {
+        try {
+            String query =  
+                "SELECT "+
+                    "hod.room_type_id id, "+
+                    "(SELECT name from room_type rt WHERE rt.id = hod.room_type_id) name, "+
+                    "SUM(hod.quantity) quantity "+
+                "FROM hotel_order_details hod "+
+                "INNER JOIN ( SELECT id "+
+                            "FROM hotel_orders ) ho "+
+                "ON ho.id = hod.hotel_orders_id "+
+                "GROUP BY room_type_id";
+                // "-- hotels_id = 1 and status_id = 'DAHOANTHANH'"
+            return db.createNativeQuery(query, PrecentByRoomType.class).getResultList();
+        } catch (Exception e) {}
+        return null;
+    }
+
+    public HotelModel foundByUserId(int userId) {
+        Optional<HotelModel> foundhotel = hotelRepository.findByUserIdAndIsActive( userId, true);
+        return foundhotel.isPresent() ? foundhotel.get() : null;
+    }
+
+    public HotelModel foundByAuthorization(String authorization) {
+        String userId = jwtUtil.validateAndGetSubject(authorization);
+        if(!userId.equals("")) {
+            return foundByUserId(Integer.valueOf(userId));
+        }
+        return null;
+    }
 }

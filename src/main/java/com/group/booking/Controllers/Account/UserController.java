@@ -130,18 +130,34 @@ public class UserController implements UserImpl {
     }
    
     @Override
-    @GetMapping("/{id}")
+    @GetMapping("")
     @ApiOperation(value = "Get info of User [Authentication]", consumes = "application/json")
-    public ResponseEntity<ResponseObject> getByAuthorization(@PathVariable("id") int userId, HttpServletRequest request) {
-        UserModel foundUser = userService.findByIdAndAuthorization(userId, request.getHeader("Authorization"));
+    public ResponseEntity<ResponseObject> getByAuthorization(HttpServletRequest request) {
+        UserModel foundUser = userService.findByAuthorization(request.getHeader("Authorization"));
         return foundUser != null ?
             ResponseEntity.status(HttpStatus.OK).body(
                 new ResponseObject(Const.STATUS_SUCCESS, Message.SELECT_SUCCESS, foundUser)
             )
             :
             ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                new ResponseObject(Const.STATUS_FAILED, null, "")
+                new ResponseObject(Const.STATUS_FAILED, Message.NOT_FOUND, "")
             );
     }
-   
+
+    @Override
+    @GetMapping("/authorization")
+    @ApiOperation(value = "get roleId by header authorization [Authentication]", consumes = "application/json")
+    public ResponseEntity<ResponseObject> getRoleIdByAuthorization(HttpServletRequest request) {
+        System.out.println(request.getHeader("Authorization"));
+        String RoleId = userService.authorization(request.getHeader("Authorization"));
+        return !RoleId.equals("") ?
+            ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject(Const.STATUS_SUCCESS, Message.SELECT_SUCCESS, RoleId)
+            )
+            :
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                new ResponseObject(Const.STATUS_FAILED, Message.UNAUTHORIZED, RoleId)
+            );
+    }
+    
 }

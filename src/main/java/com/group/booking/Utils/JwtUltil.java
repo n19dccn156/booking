@@ -74,7 +74,7 @@ public class JwtUltil implements JWTImplement{
                 return claims.getSubject();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            return "";
         }
         return "";
     }

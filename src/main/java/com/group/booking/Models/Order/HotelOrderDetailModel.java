@@ -12,7 +12,7 @@ import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.group.booking.Common.Message;
-import com.group.booking.Models.Addons.HotelOrderDetail;
+import com.group.booking.Models.Addons.OrderDetailRequest;
 import com.group.booking.Models.Key.OrderKey;
 
 import lombok.AllArgsConstructor;
@@ -49,10 +49,10 @@ public class HotelOrderDetailModel {
     @ToString.Exclude
     private HotelOrderModel hotelOrder;
 
-    public HotelOrderDetailModel(HotelOrderDetail orderDetail, int orderId) {
+    public HotelOrderDetailModel(OrderDetailRequest orderDetail, int orderId, double price) {
         this.hotelOrderId = orderId;
-        this.roomTypeId = orderDetail.getRoomTypeId();
-        this.price = orderDetail.getPrice();
+        this.roomTypeId = orderDetail.getRoomId();
+        this.price = price;
         this.quantity = orderDetail.getQuantity();
     }
 

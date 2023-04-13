@@ -12,4 +12,10 @@ public interface HotelOrderImpl {
     public ResponseEntity<ResponseObject> getOrderByUserId(int userId);
     public ResponseEntity<ResponseObject> postOrder(OrderRequest model);
     public ResponseEntity<ResponseObject> cancelOrder(int orderId, HttpServletRequest request);
+    public ResponseEntity<ResponseObject> getOrderByHotelId(HttpServletRequest request);
+    public ResponseEntity<ResponseObject> getOrderByHotelIdAndStatus(HttpServletRequest request, String status, int page, int size);
+    public ResponseEntity<ResponseObject> getOrderById(int id);
+    public ResponseEntity<ResponseObject> cancelOrderByManage(int orderId, HttpServletRequest request);
+    public ResponseEntity<ResponseObject> changeStatus(int orderId, String status, HttpServletRequest request);
+
 }

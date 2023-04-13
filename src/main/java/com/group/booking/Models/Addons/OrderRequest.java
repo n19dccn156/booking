@@ -25,11 +25,11 @@ public class OrderRequest {
     @NotEmpty(message = Message.CHECKOUT_NOT_EMP)
     private String checkout;
 
-    @Column(name = "create_at", nullable = false, length = 20)
-    private String createdAt;
+    // @Column(name = "create_at", nullable = false, length = 20)
+    // private String createdAt;
 
-    @Column(name = "modify_time", nullable = false, length = 20)
-    private String modifyTime;
+    // @Column(name = "modify_time", nullable = false, length = 20)
+    // private String modifyTime;
     
     @Column(nullable = false, length = 50)
     @NotEmpty(message = Message.NAME_NOT_EMP)
@@ -46,6 +46,6 @@ public class OrderRequest {
     private int hotelId;
     
     @NotNull(message = "Phòng đặt không bỏ trống")
-    private Set<HotelOrderDetail> orderDetails;
+    private Set<OrderDetailRequest> orderDetails;
     
 }

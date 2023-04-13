@@ -175,11 +175,11 @@ public class UserService {
         return Message.UPDATE_FAILED;
     }
 
-    public UserModel findByIdAndAuthorization(int userId, String authorization) {
+    public UserModel findByAuthorization(String authorization) {
         try {
             String id = jwtUltil.validateAndGetSubject(authorization);
-            if(userId == Integer.valueOf(id)) {
-                UserModel foundUser = foundUserById(userId);
+            if(!id.equals("")) {
+                UserModel foundUser = foundUserById(Integer.valueOf(id));
                 
                 return foundUser != null ? foundUser : null;
             }
@@ -219,4 +219,12 @@ public class UserService {
         }
     }
 
+    public String authorization(String authorization) {
+        String userId = jwtUltil.validateAndGetSubject(authorization);
+        if(!userId.equals("")) {
+            UserModel foundUser = foundUserById(Integer.valueOf(userId));
+            return foundUser != null ? foundUser.getRoleId() : "";
+        }
+        return "";
+    }
 }

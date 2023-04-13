@@ -3,6 +3,8 @@ package com.group.booking.Controllers.Hotel;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +18,10 @@ import com.group.booking.Common.Const;
 import com.group.booking.Common.Message;
 import com.group.booking.Interfaces.Hotel.HotelImpl;
 import com.group.booking.Models.Addons.HotelResponse;
+import com.group.booking.Models.Addons.PrecentByRoomType;
 import com.group.booking.Models.Addons.ResponseObject;
 import com.group.booking.Models.Addons.ResultResponse;
+import com.group.booking.Models.Addons.RevenueOn12MonthAgo;
 import com.group.booking.Models.Hotel.HotelModel;
 import com.group.booking.Models.Hotel.ImageHotelModel;
 import com.group.booking.Services.Hotel.HotelService;
@@ -157,5 +161,49 @@ public class HotelController implements HotelImpl {
             );
     }
 
+    @Override
+    @GetMapping("/revenue")
+    @ApiOperation(value = "Get revenue by hotel_id [ALL]", consumes = "application/json")
+    public ResponseEntity<ResponseObject> GetRevenueOn12MonthAgo(HttpServletRequest request) {
+        List<RevenueOn12MonthAgo> data = hotelService.getRevenueOn12MonthAgo(request.getHeader("Authorization"));
+        return data != null ?
+            ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject(Const.STATUS_SUCCESS, Message.SELECT_SUCCESS, data)
+            )
+            :
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new ResponseObject(Const.STATUS_FAILED, Message.SELECT_FAILED, "")
+            );
+    }
+
+    @Override
+    @GetMapping("/precent")
+    @ApiOperation(value = "Get precent room-type by hotel_id [ALL]", consumes = "application/json")
+    public ResponseEntity<ResponseObject> getPercentByRoomType(HttpServletRequest request) {
+        List<PrecentByRoomType> data = hotelService.getPrecentByRoomType();
+        return data != null ?
+            ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject(Const.STATUS_SUCCESS, Message.SELECT_SUCCESS, data)
+            )
+            :
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new ResponseObject(Const.STATUS_FAILED, Message.SELECT_FAILED, "")
+            );
+    }
+
+    @Override
+    @GetMapping("/authorization")
+    @ApiOperation(value = "Get hotel by authorization [ALL]", consumes = "application/json")
+    public ResponseEntity<ResponseObject> getHotelByAuthorization(HttpServletRequest request) {
+        HotelModel foundHotel = hotelService.foundByAuthorization(request.getHeader("Authorization"));
+        return foundHotel != null ?
+            ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject(Const.STATUS_SUCCESS, Message.SELECT_SUCCESS, foundHotel)
+            )
+            :
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new ResponseObject(Const.STATUS_FAILED, Message.SELECT_FAILED, "")
+            );
+    }
     
 }

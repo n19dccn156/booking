@@ -1,6 +1,7 @@
 package com.group.booking.Services.Hotel;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,16 @@ public class RoomTypeService {
             return !data.isEmpty() ? data : null;
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        return null;
+    }
+
+    public RoomTypeModel findById(int id) {
+        try {
+            Optional<RoomTypeModel> found = roomTypeRepository.findById(id);
+            if(found.isPresent()) return found.get();
+        } catch (Exception e) {
+            // TODO: handle exception
         }
         return null;
     }
