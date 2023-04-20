@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.group.booking.Models.Addons.HotelResponse;
 import com.group.booking.Models.Hotel.HotelModel;
@@ -54,4 +56,23 @@ public interface HotelRepository extends JpaRepository<HotelModel, Integer> {
                     "FROM hotels ORDER BY num_rating DESC limit 8", nativeQuery = true)
     public List<HotelResponse> findTop8OrderByNumberRating();
 
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE hotels SET description = ?1 WHERE id = ?2", nativeQuery = true)
+    public void updateByDescription(String description, Integer hotelId);
+
+    @Transactional
+    @Modifying
+    @Query(value = ""+
+        "UPDATE hotels "+
+        "SET name = ?1,"+
+            "address = ?2,"+
+            "phone = ?3,"+
+            "checkin = ?4,"+
+            "checkout = ?5,"+
+            "lat = ?6,"+
+            "lon = ?7,"+
+            "avatar = ?8 "+
+        "WHERE id = ?9", nativeQuery = true)
+    public void updateHotel(String name, String address, String phone, String checkin, String checkout, double lat, double lon, String avatar, int id);
 }

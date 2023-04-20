@@ -1,7 +1,10 @@
 package com.group.booking.Utils;
 
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 public class TimeUltil {
     
@@ -18,12 +21,28 @@ public class TimeUltil {
         return dtf3.format(LocalDateTime.now()).replace(currentYear, agoYear).substring(0, 8)+"01";
     }
 
+    public static String getDateFormatYYYYMMDD(String date) {
+        return dtf3.format(LocalDateTime.of(Integer.valueOf(date.split("-")[0]), Integer.valueOf(date.split("-")[1]), Integer.valueOf(date.split("-")[2]), 0, 0, 0));
+    }
+
     public static String getCurrentMonth() {
         return dtf3.format(LocalDateTime.now());
     }
 
     public static String getCurrentTimeStamp() {
         return dtf2.format(LocalDateTime.now());
+    }
+
+    public static Date getDateYYYYMMDD(String date) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+        try {
+            Long time = sdf.parse(date).getTime();
+            Date parseDate = new Date(time);
+            return parseDate;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static Long getCurrentTimeMillis() {

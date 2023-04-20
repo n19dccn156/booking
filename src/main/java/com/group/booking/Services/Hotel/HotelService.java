@@ -2,6 +2,7 @@ package com.group.booking.Services.Hotel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,9 +22,11 @@ import com.group.booking.Models.Addons.ResultResponse;
 import com.group.booking.Models.Addons.RevenueOn12MonthAgo;
 import com.group.booking.Models.Hotel.HotelModel;
 import com.group.booking.Models.Hotel.HotelResponseModel;
+import com.group.booking.Models.Hotel.HotelUpdate;
 import com.group.booking.Models.Hotel.ImageHotelModel;
 import com.group.booking.Repositories.Hotel.HotelRepository;
 import com.group.booking.Repositories.Hotel.ImageHotelRepository;
+import com.group.booking.Services.Image.ImageService;
 import com.group.booking.Utils.JwtUltil;
 import com.group.booking.Utils.ListFilter;
 import com.group.booking.Utils.TimeUltil;
@@ -39,6 +42,8 @@ public class HotelService {
     private ImageHotelRepository imageHotelRepository;
     @Autowired
     private JwtUltil jwtUtil;
+    @Autowired
+    private ImageService imageService;
 
     public HotelModel foundById(int id) {
         try {
@@ -207,17 +212,16 @@ public class HotelService {
                     String query =  
                         "SELECT "+
                             "ROW_NUMBER() OVER(ORDER BY ho.month ASC) ind, "+
-                            "ho.month, SUM(hod.price * hod.quantity) total "+
+                            "ho.month, SUM(hod.price * hod.quantity * DATEDIFF(ho.checkout, ho.checkin)) total "+
                         "FROM hotel_order_details hod "+
                         "INNER JOIN ( " +
-                            "SELECT id, CONCAT(month(checkin),'-',year(checkin)) month "+
+                            "SELECT id, checkin, checkout, CONCAT(month(checkin),'-',year(checkin)) month "+
                             "FROM booking.hotel_orders " +
                             "WHERE hotels_id = "+ foundHotel.getId() + " AND status_id = '" + Const.COMPLETE + "'"+ 
                                 " AND checkin >= '"+ TimeUltil.getCurrentMonthAgoYear() +"' AND checkin <= '" + TimeUltil.getCurrentMonth() + "'"+
                         ") ho "+
                         "ON hod.hotel_orders_id = ho.id "+
                         "GROUP BY ho.month";
-                    System.out.println(query);
                     // "-- hotels_id = 1 and status_id = 'DAHOANTHANH'"
                     return db.createNativeQuery(query, RevenueOn12MonthAgo.class).getResultList();
                 }
@@ -241,6 +245,69 @@ public class HotelService {
                 // "-- hotels_id = 1 and status_id = 'DAHOANTHANH'"
             return db.createNativeQuery(query, PrecentByRoomType.class).getResultList();
         } catch (Exception e) {}
+        return null;
+    }
+
+    public String getDescription(String authorization) {
+        HotelModel foundHotel = foundByAuthorization(authorization);
+        if(foundHotel != null) {
+            return foundHotel.getDescription();
+        }
+        return null;
+    }
+
+    public String updateDescription(String description, String authorization) {
+        try {
+            if(description.length() < 10) return "Nội dung mô tả phải lớn hơn 10 ký tự";
+            HotelModel foundHotel = foundByAuthorization(authorization);
+            if(foundHotel != null) {
+                hotelRepository.updateByDescription(description, foundHotel.getId());
+                return "OK";
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return "Quyền không hợp lệ";
+    }
+
+    public HotelUpdate updateHotel(HotelUpdate hotel, String authorization) {
+        try {
+            HotelModel foundHotel = foundByAuthorization(authorization);
+            if(foundHotel != null) {
+                foundHotel.setName(hotel.getName());
+                foundHotel.setAddress(hotel.getAddress());
+                foundHotel.setPhone(hotel.getPhone());
+
+                foundHotel.setCheckin(hotel.getCheckin());
+                foundHotel.setCheckout(hotel.getCheckout());
+                foundHotel.setLat(hotel.getLon());
+                foundHotel.setLat(hotel.getLat());
+
+                if(foundHotel.getAvatar().length() != hotel.getAvatar().length()) {
+                    String avatar = imageService.putImage(Const.HOST+foundHotel.getAvatar(), Base64.getDecoder().decode(hotel.getAvatar()), authorization);
+                    if(!avatar.equals("")) {
+                        foundHotel.setAvatar(avatar);
+                        hotel.setAvatar(avatar);
+                    }
+                }
+                
+                hotelRepository.updateHotel(
+                    foundHotel.getName(), 
+                    foundHotel.getAddress(), 
+                    foundHotel.getPhone(), 
+                    foundHotel.getCheckin(), 
+                    foundHotel.getCheckout(), 
+                    foundHotel.getLat(), 
+                    foundHotel.getLon(), 
+                    foundHotel.getAvatar(), 
+                    foundHotel.getId());
+                
+                return hotel;
+            }
+            System.out.println(hotel.toString());
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
         return null;
     }
 

@@ -27,7 +27,7 @@ import com.group.booking.Utils.JwtUltil;
 
 @Service
 public class HotelOrderService {
-    
+
     @Autowired
     private HotelOrderRepository hotelOrderRepository;
     @Autowired

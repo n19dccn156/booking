@@ -61,6 +61,5 @@ public class ImageController implements ImageImpl {
 
         return null;
     }
-    
 
 }

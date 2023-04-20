@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 
 import com.group.booking.Models.Addons.ResponseObject;
+import com.group.booking.Models.Hotel.HotelUpdate;
 
 public interface HotelImpl {
     
@@ -20,5 +21,7 @@ public interface HotelImpl {
     public ResponseEntity<ResponseObject> GetRevenueOn12MonthAgo(HttpServletRequest request);
     public ResponseEntity<ResponseObject> getPercentByRoomType(HttpServletRequest request);
     public ResponseEntity<ResponseObject> getHotelByAuthorization(HttpServletRequest request);
-
+    public ResponseEntity<ResponseObject> getDescriptionByAuthorization(HttpServletRequest request);
+    public ResponseEntity<ResponseObject> getDescriptionByAuthorization(String description, HttpServletRequest request);
+    public ResponseEntity<ResponseObject> updateHotel(HotelUpdate hotel, HttpServletRequest request);
 }

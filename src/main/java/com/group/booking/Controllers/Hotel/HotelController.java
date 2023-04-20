@@ -8,8 +8,11 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +26,7 @@ import com.group.booking.Models.Addons.ResponseObject;
 import com.group.booking.Models.Addons.ResultResponse;
 import com.group.booking.Models.Addons.RevenueOn12MonthAgo;
 import com.group.booking.Models.Hotel.HotelModel;
+import com.group.booking.Models.Hotel.HotelUpdate;
 import com.group.booking.Models.Hotel.ImageHotelModel;
 import com.group.booking.Services.Hotel.HotelService;
 
@@ -205,5 +209,51 @@ public class HotelController implements HotelImpl {
                 new ResponseObject(Const.STATUS_FAILED, Message.SELECT_FAILED, "")
             );
     }
+
+    @Override
+    @GetMapping("/description")
+    @ApiOperation(value = "Get description by authorization [ALL]", consumes = "application/json")
+    public ResponseEntity<ResponseObject> getDescriptionByAuthorization(HttpServletRequest request) {
+        String description = hotelService.getDescription(request.getHeader("Authorization"));
+        return description != null ?
+            ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject(Const.STATUS_SUCCESS, Message.SELECT_SUCCESS, description)
+            )
+            :
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new ResponseObject(Const.STATUS_FAILED, Message.SELECT_FAILED, "")
+            );
+    }
+    
+    @Override
+    @PatchMapping("/description")
+    @ApiOperation(value = "Update description by authorization [ALL]", consumes = "application/json")
+    public ResponseEntity<ResponseObject> getDescriptionByAuthorization(@RequestParam(name = "description", required = true) String description, HttpServletRequest request) {
+        String message = hotelService.updateDescription(description, request.getHeader("Authorization"));
+        return message.equals("OK") ?
+            ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject(Const.STATUS_SUCCESS, Message.UPDATE_SUCCESS, message)
+            )
+            :
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new ResponseObject(Const.STATUS_FAILED, message, "")
+            );
+    }
+
+    @Override
+    @PatchMapping("")
+    @ApiOperation(value = "Update hotel by authorization [ALL]", consumes = "application/json")
+    public ResponseEntity<ResponseObject> updateHotel(@RequestBody @Validated HotelUpdate hotel, HttpServletRequest request) {
+        HotelUpdate found = hotelService.updateHotel(hotel, request.getHeader("Authorization"));
+        return found != null ?
+            ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject(Const.STATUS_SUCCESS, Message.UPDATE_SUCCESS, found)
+            )
+            :
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new ResponseObject(Const.STATUS_FAILED, Message.UPDATE_FAILED, "")
+            );
+    }
+
     
 }

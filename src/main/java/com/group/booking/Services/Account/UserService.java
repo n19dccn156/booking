@@ -20,6 +20,7 @@ import com.group.booking.Models.Account.SignInModel;
 import com.group.booking.Models.Account.SignUpModel;
 import com.group.booking.Models.Account.UserModel;
 import com.group.booking.Models.Account.UserResponse;
+import com.group.booking.Models.Account.UserUpdate;
 import com.group.booking.Repositories.Account.UserRepository;
 import com.group.booking.Utils.JwtUltil;
 import com.group.booking.Utils.TimeUltil;
@@ -227,4 +228,28 @@ public class UserService {
         }
         return "";
     }
+
+    public String updateInfo(UserUpdate user, String authorization) {
+        try {
+            String userId = jwtUltil.validateAndGetSubject(authorization);
+            if(!userId.equals("")) {
+                UserModel foundUser = foundUserById(Integer.valueOf(userId));
+                if(foundUser != null) {
+                    foundUser.setFirstname(user.getFirstname());
+                    foundUser.setLastname(user.getLastname());
+                    foundUser.setEmail(user.getEmail());
+                    foundUser.setPhone(user.getPhone());
+                    foundUser.setBirthday(TimeUltil.getDateYYYYMMDD(user.getBirthday()));
+                    foundUser.setGender(user.getGender());
+
+                    userRepository.save(foundUser);
+                    return Message.UPDATE_SUCCESS;
+                }
+            }
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+        return null;
+    }
+
 }

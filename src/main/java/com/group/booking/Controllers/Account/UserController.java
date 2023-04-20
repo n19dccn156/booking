@@ -1,5 +1,7 @@
 package com.group.booking.Controllers.Account;
 
+import java.util.Base64;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,11 +10,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.group.booking.Common.Const;
@@ -23,8 +27,10 @@ import com.group.booking.Models.Account.SignInModel;
 import com.group.booking.Models.Account.SignUpModel;
 import com.group.booking.Models.Account.UserModel;
 import com.group.booking.Models.Account.UserResponse;
+import com.group.booking.Models.Account.UserUpdate;
 import com.group.booking.Models.Addons.ResponseObject;
 import com.group.booking.Services.Account.UserService;
+import com.group.booking.Services.Image.ImageService;
 import com.group.booking.Utils.JwtUltil;
 
 import io.swagger.annotations.Api;
@@ -39,6 +45,8 @@ public class UserController implements UserImpl {
     private UserService userService;
     @Autowired
     private JwtUltil jwtUltil;
+    @Autowired
+    private ImageService imageService;
 
     @Override
     @PostMapping("/signup")
@@ -86,7 +94,6 @@ public class UserController implements UserImpl {
     @PutMapping("/forgot/{email}")
     @ApiOperation(value = "Forgot password [ALL]", consumes = "application/json")
     public ResponseEntity<ResponseObject> forgot(@PathVariable("email") String email) {
-        System.out.println(email);
         return userService.forgot(email.toLowerCase().trim()) ?
             ResponseEntity.status(HttpStatus.OK).body(
                 new ResponseObject(Const.STATUS_SUCCESS, Message.SENT_EMAIL_SUCCESS, true)
@@ -148,7 +155,6 @@ public class UserController implements UserImpl {
     @GetMapping("/authorization")
     @ApiOperation(value = "get roleId by header authorization [Authentication]", consumes = "application/json")
     public ResponseEntity<ResponseObject> getRoleIdByAuthorization(HttpServletRequest request) {
-        System.out.println(request.getHeader("Authorization"));
         String RoleId = userService.authorization(request.getHeader("Authorization"));
         return !RoleId.equals("") ?
             ResponseEntity.status(HttpStatus.OK).body(
@@ -157,6 +163,37 @@ public class UserController implements UserImpl {
             :
             ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                 new ResponseObject(Const.STATUS_FAILED, Message.UNAUTHORIZED, RoleId)
+            );
+    }
+
+    @Override
+    @PatchMapping("")
+    @ApiOperation(value = "update by header authorization [Authentication]", consumes = "application/json")
+    public ResponseEntity<ResponseObject> updateInfoByAuthorization(@RequestBody @Validated UserUpdate user, HttpServletRequest request) {
+        String message = userService.updateInfo(user, request.getHeader("Authorization"));
+        return message != null ?
+            ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject(Const.STATUS_SUCCESS, message, user)
+            )
+            :
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new ResponseObject(Const.STATUS_FAILED, Message.NOT_FOUND, user)
+            );
+    }
+    
+    @Override
+    @PatchMapping("/avatar/base64")
+    @ApiOperation(value = "update avatar by base64 and header authorization [Authentication]", consumes = "application/json")
+    public ResponseEntity<ResponseObject> updateAvatarBase64(@RequestParam(name = "urlAvatarOld", required = true) String urlImgOld, @RequestParam(name = "urlBase64", required = true) String base64, HttpServletRequest request) {
+        String avatar = imageService.putImage(urlImgOld, Base64.getDecoder().decode(base64), request.getHeader("Authorization"));
+
+        return !avatar.equals("") ? 
+            ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject(Const.STATUS_SUCCESS, Message.UPDATE_SUCCESS, avatar)
+            )
+            :
+            ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject(Const.STATUS_FAILED, Message.UPDATE_FAILED, avatar)
             );
     }
     

@@ -2,7 +2,7 @@ package com.group.booking.Common;
 
 public class Const {
 
-    public static final String HOST = "http://localhost/booking";
+    public static final String HOST = "http://localhost";
 
     public static final String ROLE_CUSTOMER = "CUSTOMER";
     public static final String ROLE_HOTEL = "HOTEL";

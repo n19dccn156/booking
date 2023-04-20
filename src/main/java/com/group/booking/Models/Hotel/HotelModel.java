@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.group.booking.Common.Message;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -29,6 +30,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity
 @Table(name = "hotels")
+@Builder
 public class HotelModel {
     
     @Id
