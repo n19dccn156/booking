@@ -3,8 +3,10 @@ package com.group.booking.Repositories.Hotel;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.group.booking.Models.Hotel.RoomTypeModel;
 
@@ -48,4 +50,17 @@ public interface RoomTypeRepository extends JpaRepository<RoomTypeModel, Integer
         "FROM room_type rt " +
         "WHERE hotels_id = ?1 and is_active = true", nativeQuery = true)
     public List<RoomTypeModel> findRoomTypeByHotelIdAndDate(int hotel_id, String checkin, String Checkout);
+
+    @Transactional
+    @Modifying
+    @Query(value = ""+
+        "UPDATE room_type "+
+        "SET name = ?1,"+
+            "price = ?2,"+
+            "quantity = ?3,"+
+            "is_active = ?4,"+
+            "avatar = ?5 "+
+        "WHERE id = ?6", nativeQuery = true)
+    public void updateRoom(String name, double price, int quantity, boolean isActive, String avatar, int id);
+
 }

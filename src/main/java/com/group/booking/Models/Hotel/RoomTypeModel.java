@@ -9,6 +9,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
@@ -40,15 +42,16 @@ public class RoomTypeModel {
     private String name;
 
     @Column(nullable = false)
-    @Size(min = 200000, message = Message.PRICE_VALIDATE)
-    @NotEmpty(message = Message.PRICE_NOT_EMP)
+    @DecimalMin(value = "200000.0", message = Message.PRICE_VALIDATE)
+    // @NotEmpty(message = Message.PRICE_NOT_EMP)
     private double price;
     
     @Column(nullable = false)
-    @Size(min = 1, message = Message.QUANTITY_NOT_EMP)
-    @NotEmpty(message = Message.QUANTITY_NOT_EMP)
+    @Min(value = 1, message = Message.QUANTITY_NOT_EMP)
+    // @NotEmpty(message = Message.QUANTITY_NOT_EMP)
     private int quantity;
 
+    @Size(min = 5, message = Message.AVATAR_NOT_EMP)
     private String avatar;
 
     @Column(name = "is_active", nullable = false)

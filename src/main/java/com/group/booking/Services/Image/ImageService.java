@@ -102,6 +102,25 @@ public class ImageService {
         return "";
     }
 
+    public String postImage(byte[] img, String authorization) {
+        try {
+            String userId = jwtUltil.validateAndGetSubject(authorization);
+            if(userId.length() != 0) {
+                UserModel foundUser = userService.foundUserById(Integer.valueOf(userId));
+                if(foundUser != null) {
+                    ImagesModel image = new ImagesModel();
+                    image.setData(img);
+                    image.setUserId(foundUser.getId());
+                    ImagesModel imgSave = imageRepository.save(image);
+                    return "/api/v1/images/"+imgSave.getId();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
     public ImagesModel findById(int idImg) {
         Optional<ImagesModel> foundImg = imageRepository.findById(idImg);
         return foundImg.isPresent() ? foundImg.get() : null;
