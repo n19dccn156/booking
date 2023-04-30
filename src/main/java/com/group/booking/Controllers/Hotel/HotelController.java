@@ -6,12 +6,14 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,6 +28,7 @@ import com.group.booking.Models.Addons.ResponseObject;
 import com.group.booking.Models.Addons.ResultResponse;
 import com.group.booking.Models.Addons.RevenueOn12MonthAgo;
 import com.group.booking.Models.Hotel.HotelModel;
+import com.group.booking.Models.Hotel.HotelPost;
 import com.group.booking.Models.Hotel.HotelUpdate;
 import com.group.booking.Models.Hotel.ImageHotelModel;
 import com.group.booking.Services.Hotel.HotelService;
@@ -46,6 +49,23 @@ public class HotelController implements HotelImpl {
     @ApiOperation(value = "Get a hotel [ALL]", consumes = "application/json")
     public ResponseEntity<ResponseObject> getById(@PathVariable("id") int id) {
         HotelModel foundHotel = hotelService.foundById(id);
+        return foundHotel != null ?
+            ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject(Const.STATUS_SUCCESS, Message.SELECT_SUCCESS, foundHotel)
+            )
+            :
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new ResponseObject(Const.STATUS_FAILED, Message.SELECT_FAILED, "")
+            );
+    }
+
+    @Override
+    @GetMapping("/")
+    @ApiOperation(value = "Get all hotel param is page and size", consumes = "application/json")
+    public ResponseEntity<ResponseObject> getAll(
+            @RequestParam(name = "page", required = true) int page,
+            @RequestParam(name = "size", required = true) int size ) {
+        Page foundHotel = hotelService.foundAll(page, size);
         return foundHotel != null ?
             ResponseEntity.status(HttpStatus.OK).body(
                 new ResponseObject(Const.STATUS_SUCCESS, Message.SELECT_SUCCESS, foundHotel)
@@ -184,7 +204,7 @@ public class HotelController implements HotelImpl {
     @GetMapping("/precent")
     @ApiOperation(value = "Get precent room-type by hotel_id [ALL]", consumes = "application/json")
     public ResponseEntity<ResponseObject> getPercentByRoomType(HttpServletRequest request) {
-        List<PrecentByRoomType> data = hotelService.getPrecentByRoomType();
+        List<PrecentByRoomType> data = hotelService.getPrecentByRoomType(request.getHeader("Authorization"));
         return data != null ?
             ResponseEntity.status(HttpStatus.OK).body(
                 new ResponseObject(Const.STATUS_SUCCESS, Message.SELECT_SUCCESS, data)
@@ -252,6 +272,35 @@ public class HotelController implements HotelImpl {
             :
             ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 new ResponseObject(Const.STATUS_FAILED, Message.UPDATE_FAILED, "")
+            );
+    }
+
+    @Override
+    @PatchMapping("/{hotelId}")
+    @ApiOperation(value = "Update active hotel by authorization [admin]", consumes = "application/json")
+    public ResponseEntity<ResponseObject> changeActive(@PathVariable("hotelId") int hotelId, HttpServletRequest request) {
+        return hotelService.changeActive(hotelId, request.getHeader("Authorization")) ?
+            ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject(Const.STATUS_SUCCESS, Message.UPDATE_SUCCESS, true)
+            )
+            :
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new ResponseObject(Const.STATUS_FAILED, Message.UPDATE_FAILED, false)
+            );
+    }
+
+    @Override
+    @PostMapping("")
+    @ApiOperation(value = "add hotel by authorization [admin]", consumes = "application/json")
+    public ResponseEntity<ResponseObject> postHotel(@RequestBody HotelPost form, HttpServletRequest request) {
+        String res = hotelService.saveHotel(form, request.getHeader("Authorization"));
+        return res.equals("true") ?    
+            ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject(Const.STATUS_SUCCESS, Message.INSERT_SUCCESS, "true")
+            )
+            :
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new ResponseObject(Const.STATUS_FAILED, Message.INSERT_FAILED, false)
             );
     }
 

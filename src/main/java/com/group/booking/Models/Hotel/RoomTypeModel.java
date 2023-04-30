@@ -66,4 +66,9 @@ public class RoomTypeModel {
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private HotelModel hotel;
+
+    public RoomTypeModel setQuantityReturnRoomType(int quantity) {
+        setQuantity(quantity);
+        return this;
+    }
 }

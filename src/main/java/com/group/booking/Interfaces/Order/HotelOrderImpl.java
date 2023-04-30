@@ -17,5 +17,6 @@ public interface HotelOrderImpl {
     public ResponseEntity<ResponseObject> getOrderById(int id);
     public ResponseEntity<ResponseObject> cancelOrderByManage(int orderId, HttpServletRequest request);
     public ResponseEntity<ResponseObject> changeStatus(int orderId, String status, HttpServletRequest request);
+    public ResponseEntity<ResponseObject> confirmOrder(String orders);
 
 }

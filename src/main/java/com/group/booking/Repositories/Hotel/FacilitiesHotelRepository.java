@@ -25,4 +25,5 @@ public interface FacilitiesHotelRepository extends JpaRepository<FacilitiesHotel
     "INNER JOIN facilities f " +
     "ON fh.facilities_id = f.id", nativeQuery = true)
     public List<FacilitiesHotelResponse> findAllByHotelId(int hotelId);
+
 }

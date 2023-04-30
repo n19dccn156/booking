@@ -58,4 +58,12 @@ public class ApplicationExceptionHandle {
             new ResponseObject(Const.STATUS_FAILED, Message.REQUEST_TIMEOUT, "")
         );
     }
+
+    @ResponseStatus(HttpStatus.REQUEST_TIMEOUT)
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ResponseObject> exception(Exception ex) throws SQLException {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+            new ResponseObject(Const.STATUS_FAILED, ex.getMessage(), "")
+        );
+    }
 }

@@ -7,11 +7,13 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 
 import com.group.booking.Models.Addons.ResponseObject;
+import com.group.booking.Models.Hotel.HotelPost;
 import com.group.booking.Models.Hotel.HotelUpdate;
 
 public interface HotelImpl {
     
     public ResponseEntity<ResponseObject> getById(int id);
+    public ResponseEntity<ResponseObject> getAll(int page, int size);
     public ResponseEntity<ResponseObject> getTop8ByRating();
     public ResponseEntity<ResponseObject> getTop8ByNumberRating();
     public ResponseEntity<ResponseObject> getTop8ByTrending();
@@ -24,4 +26,6 @@ public interface HotelImpl {
     public ResponseEntity<ResponseObject> getDescriptionByAuthorization(HttpServletRequest request);
     public ResponseEntity<ResponseObject> getDescriptionByAuthorization(String description, HttpServletRequest request);
     public ResponseEntity<ResponseObject> updateHotel(HotelUpdate hotel, HttpServletRequest request);
+    public ResponseEntity<ResponseObject> changeActive(int hotelId, HttpServletRequest request);
+    public ResponseEntity<ResponseObject> postHotel(HotelPost model, HttpServletRequest request);
 }

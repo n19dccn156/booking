@@ -53,10 +53,10 @@ public class HotelModel {
     @NotEmpty(message = Message.CHECKOUT_NOT_EMP)
     private String checkout;
 
-    @NotEmpty(message = Message.LAT_NOT_EMP)
+    // @NotEmpty(message = Message.LAT_NOT_EMP)
     private Double lat;
 
-    @NotEmpty(message = Message.LON_NOT_EMP)
+    // @NotEmpty(message = Message.LON_NOT_EMP)
     private Double lon;
 
     @Column(name = "price_min")

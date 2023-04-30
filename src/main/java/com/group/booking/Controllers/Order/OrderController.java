@@ -24,6 +24,7 @@ import com.group.booking.Common.Message;
 import com.group.booking.Interfaces.Order.HotelOrderImpl;
 import com.group.booking.Models.Addons.OrderRequest;
 import com.group.booking.Models.Addons.ResponseObject;
+import com.group.booking.Models.Hotel.RoomTypeModel;
 import com.group.booking.Models.Order.HotelOrderModel;
 import com.group.booking.Models.Order.OrderGroupByStatus;
 import com.group.booking.Services.Order.HotelOrderService;
@@ -73,13 +74,15 @@ public class OrderController implements HotelOrderImpl {
     @PutMapping("/{id}")
     @ApiOperation(value = "Delete orders by order ID [Authenticate]", consumes = "application/json")
     public ResponseEntity<ResponseObject> cancelOrder(@PathVariable("id") int orderId, HttpServletRequest request) {
+        System.out.println(orderId);
+        System.out.println(request.getHeader("Authorization"));
         if(hotelOrderService.cancelOrder(orderId, request.getHeader("Authorization"))) {
             return ResponseEntity.status(HttpStatus.OK).body(
                 new ResponseObject(Const.STATUS_SUCCESS, Message.UPDATE_SUCCESS, true)
             );
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-            new ResponseObject(Const.STATUS_SUCCESS, Message.UNAUTHORIZED, false)
+            new ResponseObject(Const.STATUS_FAILED, Message.UNAUTHORIZED, false)
         );
     }
 
@@ -157,6 +160,21 @@ public class OrderController implements HotelOrderImpl {
             :
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 new ResponseObject(Const.STATUS_FAILED, Message.UPDATE_FAILED, data)  
+            );
+    }
+
+    @Override
+    @GetMapping("/confirm")
+    @ApiOperation(value = "Confirm order by", consumes = "application/json")
+    public ResponseEntity<ResponseObject> confirmOrder(@RequestParam(name = "orders", required = true) String orders) {
+        List<RoomTypeModel> list = hotelOrderService.confirmOrder(orders);
+        return list.size() > 0 ? 
+            ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject(Const.STATUS_SUCCESS, Message.SELECT_SUCCESS, list)
+            )
+            :
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                new ResponseObject(Const.STATUS_FAILED, Message.SELECT_FAILED, "")
             );
     }
     

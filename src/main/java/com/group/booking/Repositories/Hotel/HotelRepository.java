@@ -3,6 +3,8 @@ package com.group.booking.Repositories.Hotel;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,9 +17,11 @@ import com.group.booking.Models.Hotel.HotelModel;
 @Repository
 public interface HotelRepository extends JpaRepository<HotelModel, Integer> {
     
+    Optional<HotelModel> findById(int id);
     Optional<HotelModel> findByIdAndIsActive(int id, boolean isActive);
     Optional<HotelModel> findByUserIdAndIsActive(int userId, boolean isActive);
-    
+    Page<HotelModel> findAll(Pageable page);
+
     @Query(value = "SELECT "+
                     "id, "+
                     "name, "+
@@ -63,6 +67,11 @@ public interface HotelRepository extends JpaRepository<HotelModel, Integer> {
 
     @Transactional
     @Modifying
+    @Query(value = "UPDATE hotels SET is_active = ?2 WHERE id = ?1", nativeQuery = true)
+    public void updateActive(int hotelId, boolean active);
+
+    @Transactional
+    @Modifying
     @Query(value = ""+
         "UPDATE hotels "+
         "SET name = ?1,"+
@@ -75,4 +84,14 @@ public interface HotelRepository extends JpaRepository<HotelModel, Integer> {
             "avatar = ?8 "+
         "WHERE id = ?9", nativeQuery = true)
     public void updateHotel(String name, String address, String phone, String checkin, String checkout, double lat, double lon, String avatar, int id);
+
+    @Transactional
+    @Modifying
+    @Query(value = ""+
+        "INSERT INTO "+
+        "hotels (name, address, phone, checkin, checkout, avatar, province_id, "+
+        "hotel_type_id, user_id, is_active, lat, lon, price_min, price_max, rating, num_rating, description) "+
+        "VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, 10.0, 109.0, 100000.0, 100000.0, 0.0, 0, ?11)",nativeQuery = true)
+    public void insertHotel(String name, String address, String phone, String checkin, String checkout, 
+                        String avatar, String province, String hotelType, int userId, boolean isActive, String description);
 }

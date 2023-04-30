@@ -1,5 +1,7 @@
 package com.group.booking.Services.Hotel;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -12,18 +14,28 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.group.booking.Common.Const;
+import com.group.booking.Models.Account.UserModel;
 import com.group.booking.Models.Addons.Comment;
 import com.group.booking.Models.Addons.HotelResponse;
+import com.group.booking.Models.Addons.ImagesModel;
 import com.group.booking.Models.Addons.PrecentByRoomType;
 import com.group.booking.Models.Addons.ResultResponse;
 import com.group.booking.Models.Addons.RevenueOn12MonthAgo;
 import com.group.booking.Models.Hotel.HotelModel;
+import com.group.booking.Models.Hotel.HotelPost;
 import com.group.booking.Models.Hotel.HotelResponseModel;
 import com.group.booking.Models.Hotel.HotelUpdate;
 import com.group.booking.Models.Hotel.ImageHotelModel;
+import com.group.booking.Repositories.Account.UserRepository;
+import com.group.booking.Repositories.Addons.ImageRepository;
 import com.group.booking.Repositories.Hotel.HotelRepository;
 import com.group.booking.Repositories.Hotel.ImageHotelRepository;
 import com.group.booking.Services.Image.ImageService;
@@ -44,6 +56,12 @@ public class HotelService {
     private JwtUltil jwtUtil;
     @Autowired
     private ImageService imageService;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private BCryptPasswordEncoder encoder;
+    @Autowired
+    private ImageRepository imageRepository;
 
     public HotelModel foundById(int id) {
         try {
@@ -53,6 +71,21 @@ public class HotelService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public Page<HotelModel> foundAll(int page, int size) {
+        try {
+            if(page <= 0) page = 1;
+            if(size <= 0) size = 1;
+
+            Pageable pr = PageRequest.of(page - 1, size);
+            Page<HotelModel> foundHotel = hotelRepository.findAll(pr);
+
+            return foundHotel;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public List<HotelResponse> findTop8ByRating() {
@@ -169,7 +202,7 @@ public class HotelService {
 
     public List<ImageHotelModel> findAllImageByHotelId(int hotelId) {
         try {
-            List<ImageHotelModel> data = imageHotelRepository.findAllByHotelId(hotelId);
+            List<ImageHotelModel> data = imageHotelRepository.findByHotelId(hotelId);
             return data != null ? data : null;
         } catch (Exception e) {
             e.printStackTrace();
@@ -230,20 +263,26 @@ public class HotelService {
         return null;
     }
 
-    public List<PrecentByRoomType> getPrecentByRoomType() {
+    public List<PrecentByRoomType> getPrecentByRoomType(String authorization) {
         try {
-            String query =  
-                "SELECT "+
-                    "hod.room_type_id id, "+
-                    "(SELECT name from room_type rt WHERE rt.id = hod.room_type_id) name, "+
-                    "SUM(hod.quantity) quantity "+
-                "FROM hotel_order_details hod "+
-                "INNER JOIN ( SELECT id "+
-                            "FROM hotel_orders ) ho "+
-                "ON ho.id = hod.hotel_orders_id "+
-                "GROUP BY room_type_id";
-                // "-- hotels_id = 1 and status_id = 'DAHOANTHANH'"
-            return db.createNativeQuery(query, PrecentByRoomType.class).getResultList();
+            String userId = jwtUtil.validateAndGetSubject(authorization);
+            if(!userId.equals("")) {
+                HotelModel foundHotel = foundByUserId(Integer.valueOf(userId));
+                if(foundHotel != null) {
+                    String query =  
+                    "SELECT "+
+                        "hod.room_type_id id, "+
+                        "(SELECT name from room_type rt WHERE rt.id = hod.room_type_id) name, "+
+                        "SUM(hod.quantity) quantity "+
+                    "FROM hotel_order_details hod "+
+                    "INNER JOIN ( SELECT id "+
+                                "FROM hotel_orders  WHERE hotels_id = "+foundHotel.getId()+") ho" +
+                    " ON ho.id = hod.hotel_orders_id "+
+                    "GROUP BY room_type_id";
+                    // "-- hotels_id = 1 and status_id = 'DAHOANTHANH'"
+                    return db.createNativeQuery(query, PrecentByRoomType.class).getResultList();
+                }
+            }
         } catch (Exception e) {}
         return null;
     }
@@ -309,6 +348,87 @@ public class HotelService {
             System.err.println(e.getMessage());
         }
         return null;
+    }
+
+    public boolean changeActive(int hotelId, String authorization) {
+        try {
+            String userId = jwtUtil.validateAndGetSubject(authorization);
+            Optional<HotelModel> foundHotel = hotelRepository.findById(hotelId);
+            if(userId != "" && foundHotel.isPresent()) {
+                Optional<UserModel> foundUser = userRepository.findById(foundHotel.get().getUserId());
+                if(foundUser.isPresent()) {
+                    foundUser.get().setActive(!foundHotel.get().isActive());
+                    userRepository.save(foundUser.get());
+                    hotelRepository.updateActive(hotelId, !foundHotel.get().isActive());
+                    return true;
+                }
+            }
+        } catch (Exception e) {}
+        return false;
+    }
+
+    @Transactional
+    public String saveHotel(HotelPost model, String authorization) {
+        try {
+            String userId = jwtUtil.validateAndGetSubject(authorization);
+            if(userId != "") {
+                Optional<UserModel> foundUser = userRepository.findById(Integer.valueOf(userId));
+                if(foundUser.isPresent() && foundUser.get().getRoleId().equals("ADMIN")) {
+                    UserModel user = new UserModel();
+                    byte[] i = new byte[0];
+
+                    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                    user.setUsername(model.getUsername());
+                    user.setPassword(encoder.encode(model.getPassword()));
+                    user.setFirstname(model.getFirstname());
+                    user.setLastname(model.getLastname());
+                    user.setPhone(model.getPhone());
+                    user.setEmail(model.getEmail());
+                    dateFormat.parse(model.getBirthday());
+                    user.setBirthday(dateFormat.parse(model.getBirthday()));
+                    user.setGender(model.getGender());
+                    user.setActive(true);
+                    user.setAvatar("");
+                    user.setRoleId("HOTEL");
+
+                    user = userRepository.save(user);
+
+                    // avatar user
+                    ImagesModel img = new ImagesModel();
+                    img.setUserId(user.getId());
+                    img.setData(i);
+                    ImagesModel imageUser = imageRepository.save(img);
+                    System.err.println("user: " + imageUser.getId());
+                    user.setAvatar("/api/v1/images/"+imageUser.getId());
+                    userRepository.save(user);
+                    // avatar hotel
+
+                    ImagesModel img2 = new ImagesModel();
+                    img2.setUserId(user.getId());
+                    img2.setData(i);
+                    ImagesModel imageHotel = imageRepository.save(img2);
+                    System.err.println("hotel: " + imageHotel.getId());
+                    
+                    hotelRepository.insertHotel(
+                        model.getName(), 
+                        model.getAddress(), 
+                        model.getPhoneHotel(), 
+                        model.getCheckin(), 
+                        model.getCheckout(), 
+                        "/api/v1/images/"+imageHotel.getId(), 
+                        model.getProvince(), 
+                        model.getHotelType(), 
+                        user.getId(), 
+                        true, "");
+
+                    return "true";
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw new RuntimeException(e.getMessage(), e);
+        }
+        return "false";
     }
 
     public HotelModel foundByUserId(int userId) {

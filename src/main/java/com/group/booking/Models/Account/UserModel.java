@@ -1,6 +1,6 @@
 package com.group.booking.Models.Account;
 
-import java.sql.Date;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -68,6 +68,7 @@ public class UserModel {
     @NotEmpty(message = Message.GENDER_NOT_EMP)
     private String gender;
     
+    // @Temporal(TemporalType.DATE)
     private String avatar;
 
     private String verify;

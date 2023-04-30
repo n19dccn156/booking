@@ -8,6 +8,8 @@ public class Message {
     public static final String UPDATE_FAILED = "Cập nhật dữ liệu thất bại";
     public static final String INSERT_SUCCESS = "Thêm dữ liệu thành công";
     public static final String INSERT_FAILED = "Thêm dữ liệu thất bại";
+    public static final String DELETE_SUCCESS = "Xóa dữ liệu thành công";
+    public static final String DELETE_FAILED = "Xóa dữ liệu thất bại";
 
     public static final String USERNAME_UNIQUE = "Tên tài khoản này đã được sử dụng";
     public static final String PHONE_UNIQUE = "Số điện thoại này đã được sử dụng";

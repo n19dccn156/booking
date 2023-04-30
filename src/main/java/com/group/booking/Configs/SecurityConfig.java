@@ -60,7 +60,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests().antMatchers().hasAnyAuthority(Const.ROLE_ADMIN); // role admin mới được sử dụng
         http.authorizeRequests().antMatchers().hasAnyAuthority(Const.ROLE_HOTEL); // role hotel mới được sử dụng
         http.authorizeRequests().antMatchers().hasAnyAuthority(Const.ROLE_EMPLOYEE); // role employee mới được sử dụng
-        http.authorizeRequests().antMatchers().hasAnyAuthority(Const.ROLE_CUSTOMER); // role employee mới được dùng
+        http.authorizeRequests().antMatchers().hasAnyAuthority(Const.ROLE_CUSTOMER); // role customer mới được dùng
         http.authorizeRequests().antMatchers().authenticated(); // tất cả role đếu được sử dụng (page update password)
         http.authorizeRequests().antMatchers(
             "/api/v1/users/signup"

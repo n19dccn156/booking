@@ -11,5 +11,5 @@ import com.group.booking.Models.Key.ImageKey;
 @Repository
 public interface ImageHotelRepository extends JpaRepository<ImageHotelModel, ImageKey> {
     
-    List<ImageHotelModel> findAllByHotelId(int hotelId);
+    List<ImageHotelModel> findByHotelId(int hotelId);
 }

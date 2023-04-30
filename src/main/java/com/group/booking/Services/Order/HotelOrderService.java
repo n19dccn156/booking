@@ -1,8 +1,11 @@
 package com.group.booking.Services.Order;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -84,16 +87,19 @@ public class HotelOrderService {
     public boolean cancelOrder(int orderId, String authorization) {
         try {
             String userId = jwtUltil.validateAndGetSubject(authorization);
+            System.err.println("UserId: " + userId );
             if(!userId.equals("")) {
                 HotelOrderModel foundOrder = getByOrderId(orderId);
+                System.err.println("foundOrder: " + foundOrder.getId() );
                 if(foundOrder != null && foundOrder.getUserId() == Integer.valueOf(userId)) {
+                    System.out.println("Chuẩn bị save");
                     foundOrder.setStatusId(Const.CANCEL);
                     hotelOrderRepository.save(foundOrder);
                     return true;
                 }
             }
         } catch (Exception e) {
-            
+            System.out.println("Luu bị lỗi");
         }
         return false;
     }
@@ -177,5 +183,19 @@ public class HotelOrderService {
             throw e;
         }
         return false;
+    }
+
+    public List<RoomTypeModel> confirmOrder(String orders) {
+        // convert from orders string -> list order string
+        List<String> list = Arrays.asList(orders.split(","));
+        // convert from list order string -> list array about (id, quantity)
+        Stream<List<String>> l = list.stream().map(data -> Arrays.asList(data.split(":")));
+        // find list for result
+        List<RoomTypeModel> result = l.map(data -> roomTypeService
+                                            .findById(Integer.valueOf(data.get(0)))
+                                            .setQuantityReturnRoomType(Integer.valueOf(data.get(1))))
+                                            .sorted(Comparator.comparing(RoomTypeModel::getPrice))
+                                            .collect(Collectors.toList());
+        return result;
     }
 }
