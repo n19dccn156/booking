@@ -88,6 +88,15 @@ public interface HotelRepository extends JpaRepository<HotelModel, Integer> {
     @Transactional
     @Modifying
     @Query(value = ""+
+        "UPDATE hotels "+
+        "SET rating = ?2,"+
+            "num_rating = ?3 "+
+        "WHERE id = ?1", nativeQuery = true)
+    public void updateRating(int id, double rating, int numRating);
+
+    @Transactional
+    @Modifying
+    @Query(value = ""+
         "INSERT INTO "+
         "hotels (name, address, phone, checkin, checkout, avatar, province_id, "+
         "hotel_type_id, user_id, is_active, lat, lon, price_min, price_max, rating, num_rating, description) "+

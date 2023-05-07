@@ -196,5 +196,21 @@ public class UserController implements UserImpl {
                 new ResponseObject(Const.STATUS_FAILED, Message.UPDATE_FAILED, avatar)
             );
     }
+
+    @Override
+    @PatchMapping("/forgot")
+    @ApiOperation(value = "update PASSWORD for forgot password [Authentication]", consumes = "application/json")
+    public ResponseEntity<ResponseObject> updateForgotPassword(HttpServletRequest request, @RequestParam(name = "password1", required = true) String password1,
+            @RequestParam(name = "password2", required = true) String password2) {
+        String message = userService.updateForgotPassword(request.getHeader("Authorization"), password1, password2);
+        if(message.equals("OK"))
+            return ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject(Const.STATUS_SUCCESS, "Cập nhật mật khẩu thành công", true)
+            );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+            new ResponseObject(Const.STATUS_FAILED, message, false)
+        );
+    }
+    
     
 }

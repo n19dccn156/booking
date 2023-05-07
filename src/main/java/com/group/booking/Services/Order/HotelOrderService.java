@@ -22,11 +22,13 @@ import com.group.booking.Models.Hotel.RoomTypeModel;
 import com.group.booking.Models.Order.HotelOrderDetailModel;
 import com.group.booking.Models.Order.HotelOrderModel;
 import com.group.booking.Models.Order.OrderGroupByStatus;
+import com.group.booking.Repositories.Hotel.HotelRepository;
 import com.group.booking.Repositories.Order.HotelOrderDetailRepository;
 import com.group.booking.Repositories.Order.HotelOrderRepository;
 import com.group.booking.Services.Hotel.HotelService;
 import com.group.booking.Services.Hotel.RoomTypeService;
 import com.group.booking.Utils.JwtUltil;
+import com.group.booking.Utils.TimeUltil;
 
 @Service
 public class HotelOrderService {
@@ -39,6 +41,8 @@ public class HotelOrderService {
     private JwtUltil jwtUltil;
     @Autowired
     private HotelService hotelService;
+    @Autowired
+    private HotelRepository hotelRepository;
     @Autowired
     private RoomTypeService roomTypeService;
 
@@ -197,5 +201,36 @@ public class HotelOrderService {
                                             .sorted(Comparator.comparing(RoomTypeModel::getPrice))
                                             .collect(Collectors.toList());
         return result;
+    }
+
+    // @Transactional
+    public String patchCommentsByOrderIdAndAuthz(int orderId, int rating, String comment, String authorization) {
+        try {
+            String userId = jwtUltil.validateAndGetSubject(authorization);
+            HotelOrderModel foundOrder = getByOrderId(orderId);
+            if(foundOrder != null && userId.equals(String.valueOf(foundOrder.getUserId()))) {
+                if(foundOrder.getStatusId().equals(Const.COMPLETE)) {
+                    if(rating >= 1 && rating <= 5) {
+                        HotelModel foundHotel = hotelService.foundById(foundOrder.getHotelId());
+                        if(foundHotel != null) {
+    
+
+                            foundHotel.setNumRating(foundHotel.getNumRating()+1);
+                            foundHotel.setRating(foundHotel.getRating() + (Double.valueOf(rating)-foundHotel.getRating())/foundHotel.getNumRating());
+                        
+                            hotelOrderRepository.updateRating(orderId, rating, comment, TimeUltil.getCurrentTimeStamp());
+                            hotelRepository.updateRating(foundHotel.getId(), foundHotel.getRating(), foundHotel.getNumRating());
+                            return "OK";
+                        }
+                    }
+                    return "Số sao phải từ 1 đến 5 sao";
+                }
+                return "Đơn chưa được hoàn thành";
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+        }
+        return "Thông tin đơn không hợp lệ";
     }
 }

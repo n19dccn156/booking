@@ -16,7 +16,7 @@ public class Comment {
 
     @Id
     private int id;
-    @Column(name = "modifyName")
+    @Column(name = "modify_time")
     private String modifyTime;
     @Column(name = "rating")
     private int rating;

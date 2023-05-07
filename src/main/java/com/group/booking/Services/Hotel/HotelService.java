@@ -216,22 +216,23 @@ public class HotelService {
             String query =  
                 "SELECT " + 
                     "ho.id, " +
-                    "ho.modify_time modifyTime, "+
+                    "ho.modify_time, "+
                     "ho.rating, "+
                     "ho.comment, "+
                     "u.avatar, "+
                     "u.gender, "+
                     "CONCAT(u.firstname, ' ', u.lastname) name "+
-                "FROM (SELECT * FROM hotel_orders WHERE hotels_id = " + hotelId + " and rating != null) ho "+
+                "FROM (SELECT * FROM hotel_orders WHERE hotels_id = " + hotelId + " and rating IS NOT null) ho "+
                 "INNER JOIN users u " +
                 "ON u.id = ho.users_id ORDER BY ho.modify_time LIMIT " + size + " OFFSET " + (page-1);
-            String queryCount = "SELECT COUNT(id) FROM hotel_orders WHERE hotels_id = " + hotelId + " and rating != null";
+            String queryCount = "SELECT COUNT(id) FROM hotel_orders WHERE hotels_id = " + hotelId + " and rating IS NOT null";
             int totalElements = Integer.valueOf(db.createNativeQuery(queryCount).getResultList().get(0).toString());
             return totalElements != 0 ?
                 new ResultResponse(db.createNativeQuery(query, Comment.class).getResultList(), totalElements, (int) Math.ceil(1.0*totalElements/size), page, size)
                 :
                 new ResultResponse("", totalElements, (int) Math.ceil(1.0*totalElements/size), page, size);
         } catch (Exception e) {
+            System.err.println(e.getMessage());
         }
         return null;
     }

@@ -11,6 +11,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.group.booking.Common.Const;
 import com.group.booking.Common.Message;
@@ -95,11 +96,11 @@ public class UserService {
             UserModel foundUser = foundUserByEmail(email);
             if(foundUser != null) {
                 if(foundUser.getVerify() != null) {
-                    String userId = jwtUltil.validateAndGetSubject(foundUser.getVerify());
-                    if(userId.length() == 0) return false;
+                    String userId = jwtUltil.validateAndGetSubject("Bearer "+foundUser.getVerify());
+                    if(!userId.equals("")) return false;
                 }
                 
-                String verify = jwtUltil.generateVerify(email);
+                String verify = jwtUltil.generateVerify(String.valueOf(foundUser.getId()));
 
                 foundUser.setVerify(verify);
                 userRepository.save(foundUser);
@@ -120,7 +121,7 @@ public class UserService {
                 String h3 = "<h3>Chào "+foundUser.getLastname()+",</h3><br>";
                 String text1 = "<p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu đến email này từ <b>"+foundUser.getLastname()+"</b></p><br>";
                 String text2 = "<p>Để đặt lại mật khẩu, hãy nhấn nút ở phía dưới.</p><br>";
-                String btn = "<a href=\""+Const.HOST+"/api/v1/users/"+foundUser.getId()+"/reset"+"\" target=\"_blank\"><button style=\""+css+"\">Đặt lại mật khẩu</button></a>";
+                String btn = "<a href=\""+"http://localhost:3000"+"/verify/"+verify+"\" target=\"_blank\"><button style=\""+css+"\">Đặt lại mật khẩu</button></a>";
                 String htmlMsg = h3+ text1 + text2 + btn;
 
                 helper.setText(htmlMsg, true); // Use this or above line.
@@ -181,7 +182,6 @@ public class UserService {
             String id = jwtUltil.validateAndGetSubject(authorization);
             if(!id.equals("")) {
                 UserModel foundUser = foundUserById(Integer.valueOf(id));
-                
                 return foundUser != null ? foundUser : null;
             }
         } catch (Exception e) {
@@ -252,4 +252,19 @@ public class UserService {
         return null;
     }
 
+    public String updateForgotPassword(String token, String password1, String password2) {
+        if(password1.equals(password2) != true) {
+            return "Mật khẩu không khớp nhau";
+        }
+        if(StringUtils.hasText(token) && token.startsWith("Bearer")) {
+            Optional<UserModel> foundUser = userRepository.findByVerify(token.substring(7));
+            if(foundUser.isPresent()) {
+                foundUser.get().setPassword(encoder.encode(password2));
+                foundUser.get().setVerify(null);
+                userRepository.save(foundUser.get());
+                return "OK";
+            }
+        }
+        return "Hãy thử gửi lại email";
+    }
 }

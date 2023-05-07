@@ -21,5 +21,5 @@ public interface UserImpl {
     public ResponseEntity<ResponseObject> getRoleIdByAuthorization(HttpServletRequest request);
     public ResponseEntity<ResponseObject> updateInfoByAuthorization(UserUpdate user, HttpServletRequest request);
     public ResponseEntity<ResponseObject> updateAvatarBase64(String urlImageOld, String base64, HttpServletRequest request);
-
+    public ResponseEntity<ResponseObject> updateForgotPassword(HttpServletRequest request, String password1, String password2);
 }

@@ -18,7 +18,7 @@ public interface UserRepository extends JpaRepository<UserModel, Integer> {
     public Optional<UserModel> findByUsername(String username);
     public Optional<UserModel> findByEmail(String email);
     public List<UserModel> findByUsernameOrEmailOrPhone(String username, String email, String phone);
-
+    public Optional<UserModel> findByVerify(String token);
     @Transactional
     @Modifying
     @Query(value = ""+

@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -178,6 +179,20 @@ public class OrderController implements HotelOrderImpl {
             );
     }
     
-    
+    @Override
+    @PatchMapping("/{orderId}/rating")
+    @ApiOperation(value = "patch rating", consumes = "application/json")
+    public ResponseEntity<ResponseObject> patchCommentsByOrderIdAndAuthz(@PathVariable("orderId") int orderId, @RequestParam(name = "rating", required = true) int rating, 
+        @RequestParam(name = "comment", required = true) String comment, HttpServletRequest request) {
+        String message = hotelOrderService.patchCommentsByOrderIdAndAuthz(orderId, rating, comment, request.getHeader("Authorization"));
+        return message.equals("OK") ?
+            ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject(Const.STATUS_SUCCESS, "Đánh giá thành công", true)
+            )
+            :
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                new ResponseObject(Const.STATUS_FAILED, message, false)
+            );
+    }
     
 }

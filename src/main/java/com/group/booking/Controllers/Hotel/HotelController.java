@@ -169,11 +169,11 @@ public class HotelController implements HotelImpl {
         if(size < 1) size = 10;
 
         ResultResponse data = hotelService.findCommentByHotelId(hotelId, page, size);
-        if(data.getData() != null && data.getData().equals("")) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                new ResponseObject(Const.STATUS_FAILED, Message.SELECT_FAILED, data)
-            );
-        }
+        // if(data.getData() == null) {
+        //     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+        //         new ResponseObject(Const.STATUS_FAILED, Message.SELECT_FAILED, data)
+        //     );
+        // }
         
         return data != null ?
             ResponseEntity.status(HttpStatus.OK).body(
