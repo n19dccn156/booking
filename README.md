@@ -25,6 +25,10 @@
   git clone https://github.com/n19dccn156/booking.git
 
   cd booking/src/main/java/com/group/booking
+  
+  sửa file booking/src/main/resources/application.properties cho phù hợp với kết nối db.
+  spring.datasource.username=root
+  spring.datasource.password=N19dccn#
 
   Chạy file BookingApplication.java
 
