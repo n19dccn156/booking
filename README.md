@@ -54,6 +54,8 @@ git clone https://github.com/vietpham2310/Hotel-Booking-mobile.git
 
 cd Hotel-Booking-mobile
 
+Sửa lại IP local: Hotel-Booking-mobile/blob/main/app/src/main/java/com/example/hotelbooking/constant/Constant.java
+
 chọn file build.gradle và download library
 
 Chạy project
